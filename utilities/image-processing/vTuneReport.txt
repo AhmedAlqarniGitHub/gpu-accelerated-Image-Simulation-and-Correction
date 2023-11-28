@@ -1,0 +1,103 @@
+vtune: Collection started. To stop the collection, either press CTRL-C or enter from another console window: vtune -r /home/u176119/image-processing/r000hs -command stop.
+colored excution Time: 3110.601902 ms
+non-colored excution Time: 457.402229 ms
+overall excution Time: 3568.004131 ms
+vtune: Collection stopped.
+vtune: Using result path `/home/u176119/image-processing/r000hs'
+vtune: Executing actions 19 % Resolving information for `icx_image_processer_re
+vtune: Warning: Cannot locate debugging information for file `/lib/x86_64-linux-gnu/libdl.so.2'.
+vtune: Warning: Cannot locate debugging information for file `/lib/x86_64-linux-gnu/libpthread.so.0'.
+vtune: Warning: Cannot locate debugging information for file `/lib64/ld-linux-x86-64.so.2'.
+vtune: Warning: Cannot locate debugging information for file `/glob/development-tools/versions/oneapi/2023.0/oneapi/vtune/2023.0.0/lib64/runtime/libittnotify_collector.so'.
+vtune: Executing actions 19 % Resolving information for `libc.so.6'            
+vtune: Warning: Cannot locate debugging information for file `/lib/x86_64-linux-gnu/libc.so.6'.
+vtune: Executing actions 20 % Resolving information for `libtpsstool.so'       
+vtune: Warning: Cannot locate debugging information for file `/glob/development-tools/versions/oneapi/2023.0/oneapi/vtune/2023.0.0/lib64/libtpsstool.so'.
+vtune: Executing actions 75 % Generating a report                              Elapsed Time: 4.916s
+    CPU Time: 25.370s
+        Effective Time: 18.631s
+        Spin Time: 6.657s
+         | A significant portion of CPU time is spent waiting. Use this metric
+         | to discover which synchronizations are spinning. Consider adjusting
+         | spin wait parameters, changing the lock implementation (for example,
+         | by backing off then descheduling), or adjusting the synchronization
+         | granularity.
+         |
+            Imbalance or Serial Spinning: 6.399s
+             | The threading runtime function related to time spent on imbalance
+             | or serial spinning consumed a significant amount of CPU time.
+             | This can be caused by a load imbalance, insufficient concurrency
+             | for all working threads, or busy waits of worker threads while
+             | serial code is executed. If there is an imbalance, apply dynamic
+             | work scheduling or reduce the size of work chunks or tasks. If
+             | there is insufficient concurrency, consider collapsing the outer
+             | and inner loops. If there is a wait for completion of serial
+             | code, explore options for parallelization with Intel Advisor,
+             | algorithm, or microarchitecture tuning of the application's
+             | serial code with VTune Profiler Basic Hotspots or
+             | Microarchitecture Exploration analysis respectively. For OpenMP*
+             | applications, use the Per-Barrier OpenMP Potential Gain metric
+             | set in the HPC Performance Characterization analysis to discover
+             | the reason for high imbalance or serial spin time.
+             |
+            Lock Contention: 0s
+            Other: 0.258s
+        Overhead Time: 0.082s
+            Creation: 0.010s
+            Scheduling: 0s
+            Reduction: 0s
+            Atomics: 0s
+            Other: 0.072s
+    Total Thread Count: 24
+    Paused Time: 0s
+Top Hotspots
+Function            Module                       CPU Time  % of CPU Time(%)
+------------------  ---------------------------  --------  ----------------
+_IO_putc            libc.so.6                      9.567s             37.7%
+__kmp_fork_barrier  libiomp5.so                    5.429s             21.4%
+__libm_pow_l9       icx_image_processer_release    3.388s             13.4%
+getc                libc.so.6                      2.064s              8.1%
+__kmp_join_call     libiomp5.so                    0.670s              2.6%
+[Others]            N/A                            4.252s             16.8%
+Effective Physical Core Utilization: 32.0% (3.841 out of 12)
+ | The metric value is low, which may signal a poor physical CPU cores
+ | utilization caused by:
+ |     - load imbalance
+ |     - threading runtime overhead
+ |     - contended synchronization
+ |     - thread/process underutilization
+ |     - incorrect affinity that utilizes logical cores instead of physical
+ |       cores
+ | Explore sub-metrics to estimate the efficiency of MPI and OpenMP parallelism
+ | or run the Locks and Waits analysis to identify parallel bottlenecks for
+ | other parallel runtimes.
+ |
+    Effective Logical Core Utilization: 23.0% (5.509 out of 24)
+     | The metric value is low, which may signal a poor logical CPU cores
+     | utilization. Consider improving physical core utilization as the first
+     | step and then look at opportunities to utilize logical cores, which in
+     | some cases can improve processor throughput and overall performance of
+     | multi-threaded applications.
+     |
+Collection and Platform Info
+    Application Command Line: ./icx_image_processer_release 
+    Operating System: 5.4.0-80-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=20.04 DISTRIB_CODENAME=focal DISTRIB_DESCRIPTION="Ubuntu 20.04.5 LTS"
+    Computer Name: s001-n009
+    Result Size: 5.1 MB 
+    Collection start time: 10:37:55 30/12/2022 UTC
+    Collection stop time: 10:38:00 30/12/2022 UTC
+    Collector Type: Driverless Perf per-process counting,User-mode sampling and tracing
+    CPU
+        Name: Intel(R) Xeon(R) Processor code named Skylake
+        Frequency: 3.392 GHz
+        Logical CPU Count: 24
+        LLC size: 20.2 MB 
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: available
+
+If you want to skip descriptions of detected performance issues in the report,
+enter: vtune -report summary -report-knob show-issues=false -r <my_result_dir>.
+Alternatively, you may view the report in the csv format: vtune -report
+<report_name> -format=csv.
+vtune: Executing actions 100 % done                                            
