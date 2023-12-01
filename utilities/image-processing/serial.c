@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <omp.h>
 #include <math.h>
 
 void rgb2lms(unsigned char r, unsigned char g, unsigned char b,
@@ -159,5 +158,5 @@ int driver(char imageFileName[])
 
 int main(int argc, char *argv[])
 {
-    driver("barbara");
+    driver("lena_color");
 }
