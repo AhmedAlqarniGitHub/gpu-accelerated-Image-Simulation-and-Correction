@@ -1,6 +1,9 @@
 # gpu-accelerated-Image-Simulation-and-Correction
 Course project
 
+# Running OpenACC Code
+!nvc -fast -ta=tesla:managed -Minfo=accel -o openACC openACC.c  && ./openACC
+!nsys profile -t openacc --stats=true --force-overwrite true -o openACC ./openACC
 
 # Simulate protanopia
 
