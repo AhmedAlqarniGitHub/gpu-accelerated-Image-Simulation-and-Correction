@@ -496,16 +496,23 @@ int driver(char imageFileName[])
     printf("width: %d\n", width);
     printf("size: %d\n", size);
 
-    simulate_cvd_protanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
-    simulate_cvd_deuteranopia(imageFileName, header, size, buffer, bitDepth, colorTable);
-    simulate_cvd_tritanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
+    for(int i=0; i<100; i++){
+      simulate_cvd_protanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
+      simulate_cvd_deuteranopia(imageFileName, header, size, buffer, bitDepth, colorTable);
+      simulate_cvd_tritanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
 
-    correct_cvd_protanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
-    correct_cvd_deuteranopia(imageFileName, header, size, buffer, bitDepth, colorTable);
-    correct_cvd_tritanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
+      correct_cvd_protanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
+      correct_cvd_deuteranopia(imageFileName, header, size, buffer, bitDepth, colorTable);
+      correct_cvd_tritanopia(imageFileName, header, size, buffer, bitDepth, colorTable);
+    }
 }
 
 int main(int argc, char *argv[])
 {
-    driver("lena_color");
+  if (acc_get_device_type() == acc_device_nvidia) {
+      printf("Running on NVIDIA GPU with %d devices available.\n", acc_get_num_devices(acc_device_nvidia));
+  } else {
+      printf("Not running on an NVIDIA GPU.\n");
+  }
+  driver("lena_color");
 }
