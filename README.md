@@ -2,8 +2,12 @@
 Course project
 
 # Running OpenACC Code
-!nvc -fast -ta=tesla:managed -Minfo=accel -o openACC openACC.c  && ./openACC
-!nsys profile -t openacc --stats=true --force-overwrite true -o openACC ./openACC
+# to compile with explicit OpenACC Data Management, run the following code:
+!nvc -fast -ta=tesla -Minfo=accel -o OpenCC OpenACC.c && ./OpenCC
+# to compile with OpenACC Managed Memory, run the following code:
+!nvc -fast -ta=tesla:managed -Minfo=accel -o OpenCC OpenACC.c && ./OpenCC
+# to profile the code, run the following code:
+!nsys profile -t OpenCC --stats=true --force-overwrite true -o OpenCC ./OpenCC
 
 # Simulate protanopia
 
