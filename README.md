@@ -1,13 +1,31 @@
 # gpu-accelerated-Image-Simulation-and-Correction
 Course project
 
-# Running OpenACC Code
+# Running Serial Code
+# to compile the Serial code, run the following code:
+!nvc -Minfo=accel -o serial serial.c
+# to profile the Serial code, run the following code:
+%timeit !./serial
+!nsys profile --stats=true --force-overwrite true -o serial ./serial
+
+# Running OpenACC Code - Explicit Data Management
 # to compile with explicit OpenACC Data Management, run the following code:
-!nvc -fast -ta=tesla -Minfo=accel -o OpenCC OpenACC.c && ./OpenCC
-# to compile with OpenACC Managed Memory, run the following code:
-!nvc -fast -ta=tesla:managed -Minfo=accel -o OpenCC OpenACC.c && ./OpenCC
+!nvc -fast -ta=tesla -Minfo=accel -o OpenACC-data-management OpenACC-data-management.c && ./OpenACC-data-management
 # to profile the code, run the following code:
-!nsys profile -t OpenCC --stats=true --force-overwrite true -o OpenCC ./OpenCC
+%timeit !./OpenACC-data-management
+!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-data-management ./OpenACC-data-management
+
+# Running OpenACC Code - Managed Memory
+# to compile with OpenACC Managed Memory, run the following code:
+!nvc -fast -ta=tesla:managed -Minfo=accel -o OpenACC-managed-memory OpenACC-managed-memory.c && ./OpenACC-managed-memory
+# to profile the code, run the following code:
+%timeit !./OpenACC-managed-memory
+!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
+
+
+
+
+
 
 # Simulate protanopia
 
