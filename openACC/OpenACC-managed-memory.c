@@ -104,7 +104,7 @@ int simulate_cvd_protanopia(char imageFileName[100], unsigned char header[54], i
         printf("File did not open.\n");
     }
 
-    int i, j, y, x;
+    int i;
     float l, m, s; // original
     unsigned char r, g, b;
     float ll, mm, ss; // updated
@@ -148,7 +148,7 @@ int simulate_cvd_deuteranopia(char imageFileName[100], unsigned char header[54],
     sprintf(ImageFilePath, "out/%s/simulate_deuteranopia.bmp", imageFileName);
     FILE *fOut = fopen(ImageFilePath, "w+"); // Output File name
 
-    int i, j, y, x;
+    int i;
     float l, m, s; // original
     unsigned char r, g, b;
     float ll, mm, ss; // updated
@@ -191,7 +191,7 @@ int simulate_cvd_tritanopia(char imageFileName[100], unsigned char header[54], i
     sprintf(ImageFilePath, "out/%s/simulate_tritanopia.bmp", imageFileName);
     FILE *fOut = fopen(ImageFilePath, "w+"); // Output File name
 
-    int i, j, y, x;
+    int i;
     float l, m, s; // original
     unsigned char r, g, b;
     float ll, mm, ss; // updated
@@ -427,7 +427,7 @@ int correct_cvd_tritanopia(char imageFileName[100], unsigned char header[54], in
     return 0;
 }
 
-int driver(char imageFileName[])
+void driver(char imageFileName[])
 {
     char ImageFilePath[150];
     sprintf(ImageFilePath, "images/%s.bmp", imageFileName);
@@ -438,7 +438,7 @@ int driver(char imageFileName[])
 
     unsigned char header[54];
     unsigned char colorTable[1024];
-    int i, j;
+    int i;
 
     if (fIn == NULL) // check if the input file has not been opened succesfully.
     {
@@ -497,4 +497,5 @@ int main(int argc, char *argv[])
         printf("Not running on an NVIDIA GPU.\n");
     }
     driver("lena_color");
+    return 0;
 }
