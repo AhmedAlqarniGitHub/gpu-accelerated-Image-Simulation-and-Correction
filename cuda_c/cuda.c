@@ -4,122 +4,177 @@
 #include <math.h>
 #include <string.h>
 
-__global__ void rgb2lms_kernel(const unsigned char *r, const unsigned char *g, const unsigned char *b, float *l, float *m, float *s, int size)
+__global__ void simulate_protanopia_kernel(const float *l, const float *m, const float *s, float *rr, float *gg, float *bb, int size)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size)
     {
-        float rr = r[idx] / 255.0f;
-        float gg = g[idx] / 255.0f;
-        float bb = b[idx] / 255.0f;
+        // Simulate protanopia
+        float ll = (0.0 * l[idx]) + (2.02344 * m[idx]) + (-2.52581 * s[idx]);
+        float mm = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
+        float ss = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
 
-        // Conversion code as in your function
         // convert to srgb
-        rr = rr <= 0.04045 ? (rr) / 12.92 : pow((rr + 0.055) / 1.055, 2.4);
-        gg = gg <= 0.04045 ? (gg) / 12.92 : pow((gg + 0.055) / 1.055, 2.4);
-        bb = bb <= 0.04045 ? (bb) / 12.92 : pow((bb + 0.055) / 1.055, 2.4);
+        rr[idx] = (ll * 5.47221206) + (mm * -1.1252419) + (ss * 0.02980165);
+        gg[idx] = (ll * -4.6419601) + (mm * 2.29317094) + (ss * -0.19318073);
+        bb[idx] = (ll * 0.16963708) + (mm * -0.1678952) + (ss * 1.16364789);
 
-        l[idx] = (rr * 0.31399022) + (gg * 0.15537241) + (bb * 0.01775239);
-        m[idx] = (rr * 0.63951294) + (gg * 0.75789446) + (bb * 0.10944209);
-        s[idx] = (rr * 0.04649755) + (gg * 0.08670142) + (bb * 0.87256922);
+        // convert to rgb
+        rr[idx] = rr[idx] <= 0.0031308 ? rr[idx] * 12.92 : (pow(1.055 * rr[idx], 0.41666) - 0.055);
+        gg[idx] = gg[idx] <= 0.0031308 ? gg[idx] * 12.92 : (pow(1.055 * gg[idx], 0.41666) - 0.055);
+        bb[idx] = bb[idx] <= 0.0031308 ? bb[idx] * 12.92 : (pow(1.055 * bb[idx], 0.41666) - 0.055);
+
+        rr[idx] *= 255;
+        gg[idx] *= 255;
+        bb[idx] *= 255;
+
+        // clamp value
+        rr[idx] = (rr[idx] < 0) ? 0 : (rr[idx] > 255) ? 255: rr[idx];
+        gg[idx] = (gg[idx] < 0) ? 0 : (gg[idx] > 255) ? 255: gg[idx];
+        bb[idx] = (bb[idx] < 0) ? 0 : (bb[idx] > 255) ? 255: bb[idx];
     }
 }
 
-__global__ void simulate_protanopia_kernel(const float *l, const float *m, const float *s, float *ll, float *mm, float *ss, int size)
+
+__global__ void simulate_deuteranopia_kernel(const float *l, const float *m, const float *s, float *rr, float *gg, float *bb, int size)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size)
     {
-        ll[idx] = (0.0 * l[idx]) + (2.02344 * m[idx]) + (-2.52581 * s[idx]);
-        mm[idx] = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
-        ss[idx] = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
+        float ll = (1.0 * l[idx]) + (0.0 * m[idx]) + (0.0 * s[idx]);
+        float mm = (0.494207 * l[idx]) + (0.0 * m[idx]) + (1.24827 * s[idx]);
+        float ss = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
+
+        // convert to srgb
+        rr[idx] = (ll * 5.47221206) + (mm * -1.1252419) + (ss * 0.02980165);
+        gg[idx] = (ll * -4.6419601) + (mm * 2.29317094) + (ss * -0.19318073);
+        bb[idx] = (ll * 0.16963708) + (mm * -0.1678952) + (ss * 1.16364789);
+
+        // convert to rgb
+        rr[idx] = rr[idx] <= 0.0031308 ? rr[idx] * 12.92 : (pow(1.055 * rr[idx], 0.41666) - 0.055);
+        gg[idx] = gg[idx] <= 0.0031308 ? gg[idx] * 12.92 : (pow(1.055 * gg[idx], 0.41666) - 0.055);
+        bb[idx] = bb[idx] <= 0.0031308 ? bb[idx] * 12.92 : (pow(1.055 * bb[idx], 0.41666) - 0.055);
+
+        rr[idx] *= 255;
+        gg[idx] *= 255;
+        bb[idx] *= 255;
+
+        // clamp value
+        rr[idx] = (rr[idx] < 0) ? 0 : (rr[idx] > 255) ? 255: rr[idx];
+        gg[idx] = (gg[idx] < 0) ? 0 : (gg[idx] > 255) ? 255: gg[idx];
+        bb[idx] = (bb[idx] < 0) ? 0 : (bb[idx] > 255) ? 255: bb[idx];
     }
+
 }
 
-__global__ void simulate_deuteranopia_kernel(const float *l, const float *m, const float *s, float *ll, float *mm, float *ss, int size)
+__global__ void simulate_tritanopia_kernel(const float *l, const float *m, const float *s, float *rr, float *gg, float *bb, int size)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size)
     {
-        ll[idx] = (1.0 * l[idx]) + (0.0 * m[idx]) + (0.0 * s[idx]);
-        mm[idx] = (0.494207 * l[idx]) + (0.0 * m[idx]) + (1.24827 * s[idx]);
-        ss[idx] = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
-    }
+        float ll = (1.0 * l[idx]) + (0.0 * m[idx]) + (0.0 * s[idx]);
+        float mm = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
+        float ss = (-0.395913 * l[idx]) + (0.801109 * m[idx]) + (0.0 * s[idx]);
 
+        // convert to srgb
+        rr[idx] = (ll * 5.47221206) + (mm * -1.1252419) + (ss * 0.02980165);
+        gg[idx] = (ll * -4.6419601) + (mm * 2.29317094) + (ss * -0.19318073);
+        bb[idx] = (ll * 0.16963708) + (mm * -0.1678952) + (ss * 1.16364789);
+
+        // convert to rgb
+        rr[idx] = rr[idx] <= 0.0031308 ? rr[idx] * 12.92 : (pow(1.055 * rr[idx], 0.41666) - 0.055);
+        gg[idx] = gg[idx] <= 0.0031308 ? gg[idx] * 12.92 : (pow(1.055 * gg[idx], 0.41666) - 0.055);
+        bb[idx] = bb[idx] <= 0.0031308 ? bb[idx] * 12.92 : (pow(1.055 * bb[idx], 0.41666) - 0.055);
+
+        rr[idx] *= 255;
+        gg[idx] *= 255;
+        bb[idx] *= 255;
+
+        // clamp value
+        rr[idx] = (rr[idx] < 0) ? 0 : (rr[idx] > 255) ? 255: rr[idx];
+        gg[idx] = (gg[idx] < 0) ? 0 : (gg[idx] > 255) ? 255: gg[idx];
+        bb[idx] = (bb[idx] < 0) ? 0 : (bb[idx] > 255) ? 255: bb[idx];
+    }
 }
 
-__global__ void simulate_tritanopia_kernel(const float *l, const float *m, const float *s, float *ll, float *mm, float *ss, int size)
-{
+__global__ void correct_protanopia_kernel(const float *l, const float *m, const float *s, float *rr, float *gg, float *bb, int size) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size)
-    {
-        ll[idx] = (0.0 * l[idx]) + (2.02344 * m[idx]) + (-2.52581 * s[idx]);
-        mm[idx] = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
-        ss[idx] = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
+    if (idx < size) {
+        // Apply protanopia correction
+        float ll = (0.0 * l[idx]) + (2.02344 * m[idx]) + (-2.52581 * s[idx]);
+        float mm = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
+        float ss = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
+
+        // Convert corrected LMS back to linear RGB
+        float linearR = (ll * 5.47221206) + (mm * -4.6419601) + (ss * 0.16963708);
+        float linearG = (ll * -1.1252419) + (mm * 2.29317094) + (ss * -0.1678952);
+        float linearB = (ll * 0.02980165) + (mm * -0.19318073) + (ss * 1.16364789);
+
+        // Convert to sRGB
+        rr[idx] = linearR <= 0.0031308 ? linearR * 12.92 : (pow((1.055 * linearR), (1.0 / 2.4)) - 0.055);
+        gg[idx] = linearG <= 0.0031308 ? linearG * 12.92 : (pow((1.055 * linearG), (1.0 / 2.4)) - 0.055);
+        bb[idx] = linearB <= 0.0031308 ? linearB * 12.92 : (pow((1.055 * linearB), (1.0 / 2.4)) - 0.055);
+
+        // Scale to 255 and clamp
+        rr[idx] = fminf(fmaxf(rr[idx] * 255.0, 0.0), 255.0);
+        gg[idx] = fminf(fmaxf(gg[idx] * 255.0, 0.0), 255.0);
+        bb[idx] = fminf(fmaxf(bb[idx] * 255.0, 0.0), 255.0);
     }
 }
 
-__global__ void correct_protanopia_kernel(const float *l, const float *m, const float *s, float *ll, float *mm, float *ss, int size)
-{
+
+
+__global__ void correct_deuteranopia_kernel(const float *l, const float *m, const float *s, float *rr, float *gg, float *bb, int size) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size)
-    {
-        ll[idx] = (0.0 * l[idx]) + (2.02344 * m[idx]) + (-2.52581 * s[idx]);
-        mm[idx] = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
-        ss[idx] = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
+    if (idx < size) {
+        // Apply deuteranopia correction
+        float ll = (1.0 * l[idx]) + (0.0 * m[idx]) + (0.0 * s[idx]);
+        float mm = (0.494207 * l[idx]) + (0.0 * m[idx]) + (1.24827 * s[idx]);
+        float ss = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
+
+        // Convert corrected LMS back to linear RGB
+        float linearR = (ll * 5.47221206) + (mm * -4.6419601) + (ss * 0.16963708);
+        float linearG = (ll * -1.1252419) + (mm * 2.29317094) + (ss * -0.1678952);
+        float linearB = (ll * 0.02980165) + (mm * -0.19318073) + (ss * 1.16364789);
+
+        // Convert to sRGB
+        rr[idx] = linearR <= 0.0031308 ? linearR * 12.92 : (pow(1.055 * linearR, 1/2.4) - 0.055);
+        gg[idx] = linearG <= 0.0031308 ? linearG * 12.92 : (pow(1.055 * linearG, 1/2.4) - 0.055);
+        bb[idx] = linearB <= 0.0031308 ? linearB * 12.92 : (pow(1.055 * linearB, 1/2.4) - 0.055);
+
+        // Scale to 255 and clamp
+        rr[idx] = fminf(fmaxf(rr[idx] * 255.0, 0.0), 255.0);
+        gg[idx] = fminf(fmaxf(gg[idx] * 255.0, 0.0), 255.0);
+        bb[idx] = fminf(fmaxf(bb[idx] * 255.0, 0.0), 255.0);
     }
 }
 
-__global__ void correct_deuteranopia_kernel(const float *l, const float *m, const float *s, float *ll, float *mm, float *ss, int size)
-{
+
+
+__global__ void correct_tritanopia_kernel(const float *l, const float *m, const float *s, float *rr, float *gg, float *bb, int size) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size)
-    {
-        ll[idx] = (1.0 * l[idx]) + (0.0 * m[idx]) + (0.0 * s[idx]);
-        mm[idx] = (0.494207 * l[idx]) + (0.0 * m[idx]) + (1.24827 * s[idx]);
-        ss[idx] = (0.0 * l[idx]) + (0.0 * m[idx]) + (1.0 * s[idx]);
+    if (idx < size) {
+        // Apply tritanopia correction
+        float ll = (1.0 * l[idx]) + (0.0 * m[idx]) + (0.0 * s[idx]);
+        float mm = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
+        float ss = (-0.395913 * l[idx]) + (0.801109 * m[idx]) + (0.0 * s[idx]);
+
+        // Convert corrected LMS back to linear RGB
+        float linearR = (ll * 5.47221206) + (mm * -4.6419601) + (ss * 0.16963708);
+        float linearG = (ll * -1.1252419) + (mm * 2.29317094) + (ss * -0.1678952);
+        float linearB = (ll * 0.02980165) + (mm * -0.19318073) + (ss * 1.16364789);
+
+        // Convert to sRGB
+        rr[idx] = linearR <= 0.0031308 ? linearR * 12.92 : (pow(1.055 * linearR, 1/2.4) - 0.055);
+        gg[idx] = linearG <= 0.0031308 ? linearG * 12.92 : (pow(1.055 * linearG, 1/2.4) - 0.055);
+        bb[idx] = linearB <= 0.0031308 ? linearB * 12.92 : (pow(1.055 * linearB, 1/2.4) - 0.055);
+
+        // Scale to 255 and clamp
+        rr[idx] = fminf(fmaxf(rr[idx] * 255.0, 0.0), 255.0);
+        gg[idx] = fminf(fmaxf(gg[idx] * 255.0, 0.0), 255.0);
+        bb[idx] = fminf(fmaxf(bb[idx] * 255.0, 0.0), 255.0);
     }
 }
-
-__global__ void correct_tritanopia_kernel(const float *l, const float *m, const float *s, float *ll, float *mm, float *ss, int size)
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size)
-    {
-        ll[idx] = (1.0 * l[idx]) + (0.0 * m[idx]) + (0.0 * s[idx]);
-        mm[idx] = (0.0 * l[idx]) + (1.0 * m[idx]) + (0.0 * s[idx]);
-        ss[idx] = (-0.395913 * l[idx]) + (0.801109 * m[idx]) + (0.0 * s[idx]);
-    }
-}
-
-
-void lms2rgb(float l, float m, float s,
-             unsigned char *r, unsigned char *g, unsigned char *b)
-{
-
-    // convert to srgb
-    float rr = (l * 5.47221206) + (m * -1.1252419) + (s * 0.02980165);
-    float gg = (l * -4.6419601) + (m * 2.29317094) + (s * -0.19318073);
-    float bb = (l * 0.16963708) + (m * -0.1678952) + (s * 1.16364789);
-
-    // convert to rgb
-    rr = rr <= 0.0031308 ? rr * 12.92 : (pow(1.055 * rr, 0.41666) - 0.055);
-    gg = gg <= 0.0031308 ? gg * 12.92 : (pow(1.055 * gg, 0.41666) - 0.055);
-    bb = bb <= 0.0031308 ? bb * 12.92 : (pow(1.055 * bb, 0.41666) - 0.055);
-
-    rr *= 255;
-    gg *= 255;
-    bb *= 255;
-
-    // clamp value
-    *r = (rr < 0) ? 0 : (rr > 255) ? 255
-                                   : rr;
-    *g = (gg < 0) ? 0 : (gg > 255) ? 255
-                                   : gg;
-    *b = (bb < 0) ? 0 : (bb > 255) ? 255
-                                   : bb;
-}
-
 
 void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
 {
@@ -164,31 +219,31 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
     float *s = (float *)malloc(size * sizeof(float));
 
     // Allocate host memory for LMS components
-    float *l_protanopia = (float *)malloc(size * sizeof(float));
-    float *m_protanopia = (float *)malloc(size * sizeof(float));
-    float *s_protanopia = (float *)malloc(size * sizeof(float));
+    float *r_protanopia = (float *)malloc(size * sizeof(float));
+    float *g_protanopia = (float *)malloc(size * sizeof(float));
+    float *b_protanopia = (float *)malloc(size * sizeof(float));
 
     // Allocate host memory for LMS components
-    float *l_deuteranopia = (float *)malloc(size * sizeof(float));
-    float *m_deuteranopia = (float *)malloc(size * sizeof(float));
-    float *s_deuteranopia = (float *)malloc(size * sizeof(float));
+    float *r_deuteranopia = (float *)malloc(size * sizeof(float));
+    float *g_deuteranopia = (float *)malloc(size * sizeof(float));
+    float *b_deuteranopia = (float *)malloc(size * sizeof(float));
 
     // Allocate host memory for LMS components
-    float *l_tritanopia = (float *)malloc(size * sizeof(float));
-    float *m_tritanopia = (float *)malloc(size * sizeof(float));
-    float *s_tritanopia = (float *)malloc(size * sizeof(float));
+    float *r_tritanopia = (float *)malloc(size * sizeof(float));
+    float *g_tritanopia = (float *)malloc(size * sizeof(float));
+    float *b_tritanopia = (float *)malloc(size * sizeof(float));
 
-    float *l_corrected_protanopia = (float *)malloc(size * sizeof(float));
-    float *m_corrected_protanopia = (float *)malloc(size * sizeof(float));
-    float *s_corrected_protanopia = (float *)malloc(size * sizeof(float));
+    float *r_corrected_protanopia = (float *)malloc(size * sizeof(float));
+    float *g_corrected_protanopia = (float *)malloc(size * sizeof(float));
+    float *b_corrected_protanopia = (float *)malloc(size * sizeof(float));
 
-    float *l_corrected_deuteranopia = (float *)malloc(size * sizeof(float));
-    float *m_corrected_deuteranopia = (float *)malloc(size * sizeof(float));
-    float *s_corrected_deuteranopia = (float *)malloc(size * sizeof(float));
+    float *r_corrected_deuteranopia = (float *)malloc(size * sizeof(float));
+    float *g_corrected_deuteranopia = (float *)malloc(size * sizeof(float));
+    float *b_corrected_deuteranopia = (float *)malloc(size * sizeof(float));
 
-    float *l_corrected_tritanopia = (float *)malloc(size * sizeof(float));
-    float *m_corrected_tritanopia = (float *)malloc(size * sizeof(float));
-    float *s_corrected_tritanopia = (float *)malloc(size * sizeof(float));
+    float *r_corrected_tritanopia = (float *)malloc(size * sizeof(float));
+    float *g_corrected_tritanopia = (float *)malloc(size * sizeof(float));
+    float *b_corrected_tritanopia = (float *)malloc(size * sizeof(float));
 
     // Convert RGB to LMS (Host)
     for (int i = 0; i < size; i++)
@@ -216,48 +271,55 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
     
     // Create CUDA streams
     cudaStream_t streamProtanopia, streamDeuteranopia, streamTritanopia;
+    cudaStream_t streamCorrectedProtanopia, streamCorrectedDeuteranopia, streamCorrectedTritanopia;
+
     cudaStreamCreate(&streamProtanopia);
     cudaStreamCreate(&streamDeuteranopia);
     cudaStreamCreate(&streamTritanopia);
+    cudaStreamCreate(&streamCorrectedProtanopia);
+    cudaStreamCreate(&streamCorrectedDeuteranopia);
+    cudaStreamCreate(&streamCorrectedTritanopia);
+
     
     int threadsPerBlock = 256;
     int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
 
     // Allocate device memory
     float *dev_l, *dev_m, *dev_s;
-    float *dev_ll_protanopia, *dev_mm_protanopia, *dev_ss_protanopia;
-    float *dev_ll_deuteranopia, *dev_mm_deuteranopia, *dev_ss_deuteranopia;
-    float *dev_ll_tritanopia, *dev_mm_tritanopia, *dev_ss_tritanopia;
+    float *dev_rr_protanopia, *dev_gg_protanopia, *dev_bb_protanopia;
+    float *dev_rr_deuteranopia, *dev_gg_deuteranopia, *dev_bb_deuteranopia;
+    float *dev_rr_tritanopia, *dev_gg_tritanopia, *dev_bb_tritanopia;
 
     // Allocate device memory for corrected LMS values
-    float *dev_ll_corrected_protanopia, *dev_mm_corrected_protanopia, *dev_ss_corrected_protanopia;
-    float *dev_ll_corrected_deuteranopia, *dev_mm_corrected_deuteranopia, *dev_ss_corrected_deuteranopia;
-    float *dev_ll_corrected_tritanopia, *dev_mm_corrected_tritanopia, *dev_ss_corrected_tritanopia;
+    float *dev_rr_corrected_protanopia, *dev_gg_corrected_protanopia, *dev_bb_corrected_protanopia;
+    float *dev_rr_corrected_deuteranopia, *dev_gg_corrected_deuteranopia, *dev_bb_corrected_deuteranopia;
+    float *dev_rr_corrected_tritanopia, *dev_gg_corrected_tritanopia, *dev_bb_corrected_tritanopia;
+    
 
     cudaMalloc((void **)&dev_l, size * sizeof(float));
     cudaMalloc((void **)&dev_m, size * sizeof(float));
     cudaMalloc((void **)&dev_s, size * sizeof(float));
 
-    cudaMalloc((void **)&dev_ll_protanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_mm_protanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ss_protanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ll_corrected_protanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_mm_corrected_protanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ss_corrected_protanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_rr_protanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_gg_protanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_bb_protanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_rr_corrected_protanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_gg_corrected_protanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_bb_corrected_protanopia, size * sizeof(float));
 
-    cudaMalloc((void **)&dev_ll_deuteranopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_mm_deuteranopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ss_deuteranopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ll_corrected_deuteranopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_mm_corrected_deuteranopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ss_corrected_deuteranopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_rr_deuteranopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_gg_deuteranopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_bb_deuteranopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_rr_corrected_deuteranopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_gg_corrected_deuteranopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_bb_corrected_deuteranopia, size * sizeof(float));
     
-    cudaMalloc((void **)&dev_ll_tritanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_mm_tritanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ss_tritanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ll_corrected_tritanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_mm_corrected_tritanopia, size * sizeof(float));
-    cudaMalloc((void **)&dev_ss_corrected_tritanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_rr_tritanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_gg_tritanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_bb_tritanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_rr_corrected_tritanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_gg_corrected_tritanopia, size * sizeof(float));
+    cudaMalloc((void **)&dev_bb_corrected_tritanopia, size * sizeof(float));
 
     // Copy data from host to device in both streams
     cudaMemcpyAsync(dev_l, l, size * sizeof(float), cudaMemcpyHostToDevice, streamProtanopia);
@@ -272,18 +334,70 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
     cudaMemcpyAsync(dev_m, m, size * sizeof(float), cudaMemcpyHostToDevice, streamTritanopia);
     cudaMemcpyAsync(dev_s, s, size * sizeof(float), cudaMemcpyHostToDevice, streamTritanopia);
 
-    // Process 1: simulate_protanopia_kernel in streamProtanopia
-    simulate_protanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamProtanopia>>>(dev_l, dev_m, dev_s, dev_ll_protanopia, dev_mm_protanopia, dev_ss_protanopia, size);
-    correct_protanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamProtanopia>>>(dev_l, dev_m, dev_s, dev_ll_corrected_protanopia, dev_mm_corrected_protanopia, dev_ss_corrected_protanopia, size);
+    cudaMemcpyAsync(dev_l, l, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedProtanopia);
+    cudaMemcpyAsync(dev_m, m, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedProtanopia);
+    cudaMemcpyAsync(dev_s, s, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedProtanopia);
+    
+    cudaMemcpyAsync(dev_l, l, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedDeuteranopia);
+    cudaMemcpyAsync(dev_m, m, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedDeuteranopia);
+    cudaMemcpyAsync(dev_s, s, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedDeuteranopia);
 
-    // Process 2: simulate_deuteranopia_kernel in streamDeuteranopia
-    simulate_deuteranopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamDeuteranopia>>>(dev_l, dev_m, dev_s, dev_ll_deuteranopia, dev_mm_deuteranopia, dev_ss_deuteranopia, size);
-    correct_deuteranopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamDeuteranopia>>>(dev_l, dev_m, dev_s, dev_ll_corrected_deuteranopia, dev_mm_corrected_deuteranopia, dev_ss_corrected_deuteranopia, size);
+    cudaMemcpyAsync(dev_l, l, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedTritanopia);
+    cudaMemcpyAsync(dev_m, m, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedTritanopia);
+    cudaMemcpyAsync(dev_s, s, size * sizeof(float), cudaMemcpyHostToDevice, streamCorrectedTritanopia);
 
-    // Process 3: simulate_tritanopia_kernel in streamTritanopia
-    simulate_tritanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamTritanopia>>>(dev_l, dev_m, dev_s, dev_ll_tritanopia, dev_mm_tritanopia, dev_ss_tritanopia, size);
-    correct_tritanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamTritanopia>>>(dev_l, dev_m, dev_s, dev_ll_corrected_tritanopia, dev_mm_corrected_tritanopia, dev_ss_corrected_tritanopia, size);
 
+    // Process 1: simulate_protanopia_kernel in streamProtanopia, streamCorrectedProtanopia
+    simulate_protanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamProtanopia>>>(dev_l, dev_m, dev_s, dev_rr_protanopia, dev_gg_protanopia, dev_bb_protanopia, size);
+    // Check for errors immediately after kernel launch
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) 
+    {
+        fprintf(stderr, "Failed to launch simulate_protanopia_kernel (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+    correct_protanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamCorrectedProtanopia>>>(dev_l, dev_m, dev_s, dev_rr_corrected_protanopia, dev_gg_corrected_protanopia, dev_bb_corrected_protanopia, size);
+    // Check for errors immediately after kernel launch
+    err = cudaGetLastError();
+    if (err != cudaSuccess) 
+    {
+        fprintf(stderr, "Failed to launch correct_protanopia_kernel (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+    // Process 2: simulate_deuteranopia_kernel in streamDeuteranopia, streamCorrectedDeuteranopia
+    simulate_deuteranopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamDeuteranopia>>>(dev_l, dev_m, dev_s, dev_rr_deuteranopia, dev_gg_deuteranopia, dev_bb_deuteranopia, size);
+    // Check for errors immediately after kernel launch
+    err = cudaGetLastError();
+    if (err != cudaSuccess) 
+    {
+        fprintf(stderr, "Failed to launch simulate_deuteranopia_kernel (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+    correct_deuteranopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamCorrectedDeuteranopia>>>(dev_l, dev_m, dev_s, dev_rr_corrected_deuteranopia, dev_gg_corrected_deuteranopia, dev_bb_corrected_deuteranopia, size);
+    // Check for errors immediately after kernel launch
+    err = cudaGetLastError();
+    if (err != cudaSuccess) 
+    {
+        fprintf(stderr, "Failed to launch correct_deuteranopia_kernel (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+    // Process 3: simulate_tritanopia_kernel in streamTritanopia, streamCorrectedTritanopia
+    simulate_tritanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamTritanopia>>>(dev_l, dev_m, dev_s, dev_rr_tritanopia, dev_gg_tritanopia, dev_bb_tritanopia, size);
+    // Check for errors immediately after kernel launch
+    err = cudaGetLastError();
+    if (err != cudaSuccess) 
+    {
+        fprintf(stderr, "Failed to launch simulate_tritanopia_kernel (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+    correct_tritanopia_kernel<<<blocksPerGrid, threadsPerBlock, 0, streamCorrectedTritanopia>>>(dev_l, dev_m, dev_s, dev_rr_corrected_tritanopia, dev_gg_corrected_tritanopia, dev_bb_corrected_tritanopia, size);
+    // Check for errors immediately after kernel launch
+    err = cudaGetLastError();
+    if (err != cudaSuccess) 
+    {
+        fprintf(stderr, "Failed to launch correct_tritanopia_kernel (error code %s)!\n", cudaGetErrorString(err));
+        exit(EXIT_FAILURE);
+    }
     // Allocate host buffers for the output
     unsigned char *protanopiaBuffer = (unsigned char *)malloc(size * 3 * sizeof(unsigned char));
     unsigned char *deuteranopiaBuffer = (unsigned char *)malloc(size * 3 * sizeof(unsigned char));
@@ -293,70 +407,74 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
     unsigned char *corrected_deuteranopiaBuffer = (unsigned char *)malloc(size * 3 * sizeof(unsigned char));
     unsigned char *corrected_tritanopiaBuffer = (unsigned char *)malloc(size * 3 * sizeof(unsigned char));
 
-    // Copy results back to host in streamProtanopia
-    cudaMemcpyAsync(l_protanopia, dev_ll_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
-    cudaMemcpyAsync(m_protanopia, dev_mm_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
-    cudaMemcpyAsync(s_protanopia, dev_ss_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
-    cudaMemcpyAsync(l_corrected_protanopia, dev_ll_corrected_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
-    cudaMemcpyAsync(m_corrected_protanopia, dev_mm_corrected_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
-    cudaMemcpyAsync(s_corrected_protanopia, dev_ss_corrected_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
-
-    // Copy results back to host in streamDeuteranopia
-    cudaMemcpyAsync(l_deuteranopia, dev_ll_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
-    cudaMemcpyAsync(m_deuteranopia, dev_mm_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
-    cudaMemcpyAsync(s_deuteranopia, dev_ss_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
-    cudaMemcpyAsync(l_corrected_deuteranopia, dev_ll_corrected_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
-    cudaMemcpyAsync(m_corrected_deuteranopia, dev_mm_corrected_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
-    cudaMemcpyAsync(s_corrected_deuteranopia, dev_ss_corrected_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
-
-    // Copy results back to host in streamTritanopia
-    cudaMemcpyAsync(l_tritanopia, dev_ll_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
-    cudaMemcpyAsync(m_tritanopia, dev_mm_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
-    cudaMemcpyAsync(s_tritanopia, dev_ss_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
-    cudaMemcpyAsync(l_corrected_protanopia, dev_ll_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
-    cudaMemcpyAsync(m_corrected_protanopia, dev_mm_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
-    cudaMemcpyAsync(s_corrected_protanopia, dev_ss_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
 
     // Wait for streamProtanopia to finish
     cudaStreamSynchronize(streamProtanopia);
+    // Wait for streamProtanopia to finish
+    cudaStreamSynchronize(streamCorrectedProtanopia);
+
+    // Copy results back to host in streamProtanopia
+    cudaMemcpyAsync(r_protanopia, dev_rr_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
+    cudaMemcpyAsync(g_protanopia, dev_gg_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
+    cudaMemcpyAsync(b_protanopia, dev_bb_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamProtanopia);
+    cudaMemcpyAsync(r_corrected_protanopia, dev_rr_corrected_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedProtanopia);
+    cudaMemcpyAsync(g_corrected_protanopia, dev_gg_corrected_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedProtanopia);
+    cudaMemcpyAsync(b_corrected_protanopia, dev_bb_corrected_protanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedProtanopia);
+
     // Wait for streamDeuteranopia to finish
     cudaStreamSynchronize(streamDeuteranopia);
+    // Wait for streamDeuteranopia to finish
+    cudaStreamSynchronize(streamCorrectedDeuteranopia);
+
+    // Copy results back to host in streamDeuteranopia
+    cudaMemcpyAsync(r_deuteranopia, dev_rr_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
+    cudaMemcpyAsync(g_deuteranopia, dev_gg_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
+    cudaMemcpyAsync(b_deuteranopia, dev_bb_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamDeuteranopia);
+    cudaMemcpyAsync(r_corrected_deuteranopia, dev_rr_corrected_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedDeuteranopia);
+    cudaMemcpyAsync(g_corrected_deuteranopia, dev_gg_corrected_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedDeuteranopia);
+    cudaMemcpyAsync(b_corrected_deuteranopia, dev_bb_corrected_deuteranopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedDeuteranopia);
+
+
     // Wait for streamTritanopia to finish
     cudaStreamSynchronize(streamTritanopia);
+    // Wait for streamTritanopia to finish
+    cudaStreamSynchronize(streamCorrectedTritanopia);
+
+    // Copy results back to host in streamTritanopia
+    cudaMemcpyAsync(r_tritanopia, dev_rr_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
+    cudaMemcpyAsync(g_tritanopia, dev_gg_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
+    cudaMemcpyAsync(b_tritanopia, dev_bb_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
+    cudaMemcpyAsync(r_corrected_protanopia, dev_rr_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
+    cudaMemcpyAsync(g_corrected_protanopia, dev_gg_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
+    cudaMemcpyAsync(b_corrected_protanopia, dev_bb_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
+
 
     // Convert LMS back to RGB for protanopia and write to file
     for (int i = 0; i < size; i++)
     {
-        unsigned char r, g, b;
-        lms2rgb(l_protanopia[i], m_protanopia[i], s_protanopia[i], &r, &g, &b);
-        protanopiaBuffer[i * 3] = r;
-        protanopiaBuffer[i * 3 + 1] = g;
-        protanopiaBuffer[i * 3 + 2] = b;
+        protanopiaBuffer[i * 3] = static_cast<unsigned char>(r_protanopia[i]);
+        protanopiaBuffer[i * 3 + 1] = static_cast<unsigned char>(g_protanopia[i]);
+        protanopiaBuffer[i * 3 + 2] = static_cast<unsigned char>(b_protanopia[i]);
 
-        lms2rgb(l_deuteranopia[i], m_deuteranopia[i], s_deuteranopia[i], &r, &g, &b);
-        deuteranopiaBuffer[i * 3] = r;
-        deuteranopiaBuffer[i * 3 + 1] = g;
-        deuteranopiaBuffer[i * 3 + 2] = b;
+        deuteranopiaBuffer[i * 3] = static_cast<unsigned char>(r_deuteranopia[i]);
+        deuteranopiaBuffer[i * 3 + 1] = static_cast<unsigned char>(g_deuteranopia[i]);
+        deuteranopiaBuffer[i * 3 + 2] = static_cast<unsigned char>(b_deuteranopia[i]);
 
-        lms2rgb(l_tritanopia[i], m_tritanopia[i], s_tritanopia[i], &r, &g, &b);
-        tritanopiaBuffer[i * 3] = r;
-        tritanopiaBuffer[i * 3 + 1] = g;
-        tritanopiaBuffer[i * 3 + 2] = b;
+        tritanopiaBuffer[i * 3] = static_cast<unsigned char>(r_tritanopia[i]);
+        tritanopiaBuffer[i * 3 + 1] = static_cast<unsigned char>(g_tritanopia[i]);
+        tritanopiaBuffer[i * 3 + 2] = static_cast<unsigned char>(b_tritanopia[i]);
 
-        lms2rgb(l_corrected_protanopia[i], m_corrected_protanopia[i], s_corrected_protanopia[i], &r, &g, &b);
-        corrected_protanopiaBuffer[i * 3] = r;
-        corrected_protanopiaBuffer[i * 3 + 1] = g;
-        corrected_protanopiaBuffer[i * 3 + 2] = b;
+        corrected_protanopiaBuffer[i * 3]     = static_cast<unsigned char>(r_corrected_protanopia[i]);
+        corrected_protanopiaBuffer[i * 3 + 1] = static_cast<unsigned char>(g_corrected_protanopia[i]);
+        corrected_protanopiaBuffer[i * 3 + 2] = static_cast<unsigned char>(b_corrected_protanopia[i]);
 
-        lms2rgb(l_corrected_deuteranopia[i], m_corrected_deuteranopia[i], s_corrected_deuteranopia[i], &r, &g, &b);
-        corrected_deuteranopiaBuffer[i * 3] = r;
-        corrected_deuteranopiaBuffer[i * 3 + 1] = g;
-        corrected_deuteranopiaBuffer[i * 3 + 2] = b;
+        corrected_deuteranopiaBuffer[i * 3] = static_cast<unsigned char>(r_corrected_deuteranopia[i]);
+        corrected_deuteranopiaBuffer[i * 3 + 1] = static_cast<unsigned char>(g_corrected_deuteranopia[i]);
+        corrected_deuteranopiaBuffer[i * 3 + 2] = static_cast<unsigned char>(b_corrected_deuteranopia[i]);
 
-        lms2rgb(l_corrected_tritanopia[i], m_corrected_tritanopia[i], s_corrected_tritanopia[i], &r, &g, &b);
-        corrected_tritanopiaBuffer[i * 3] = r;
-        corrected_tritanopiaBuffer[i * 3 + 1] = g;
-        corrected_tritanopiaBuffer[i * 3 + 2] = b;
+        corrected_tritanopiaBuffer[i * 3] = static_cast<unsigned char>(r_corrected_tritanopia[i]);
+        corrected_tritanopiaBuffer[i * 3 + 1] = static_cast<unsigned char>(g_corrected_tritanopia[i]);
+        corrected_tritanopiaBuffer[i * 3 + 2] = static_cast<unsigned char>(b_corrected_tritanopia[i]);
     }
 
     char protanopiaFileName[150];
@@ -405,6 +523,9 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
     cudaStreamDestroy(streamProtanopia);
     cudaStreamDestroy(streamDeuteranopia);
     cudaStreamDestroy(streamTritanopia);
+    cudaStreamDestroy(streamCorrectedProtanopia);
+    cudaStreamDestroy(streamCorrectedDeuteranopia);
+    cudaStreamDestroy(streamCorrectedTritanopia);
 
     free(protanopiaBuffer);
     free(deuteranopiaBuffer);
@@ -416,58 +537,57 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
 
     free(buffer);
 
-    free(l_protanopia);
-    free(m_protanopia);
-    free(s_protanopia);
+    free(r_protanopia);
+    free(g_protanopia);
+    free(b_protanopia);
 
-    free(l_deuteranopia);
-    free(m_deuteranopia);
-    free(s_deuteranopia);
+    free(r_deuteranopia);
+    free(g_deuteranopia);
+    free(b_deuteranopia);
 
-    free(l_tritanopia);
-    free(m_tritanopia);
-    free(s_tritanopia);
+    free(r_tritanopia);
+    free(g_tritanopia);
+    free(b_tritanopia);
 
-    free(l_corrected_protanopia);
-    free(m_corrected_protanopia);
-    free(s_corrected_protanopia);
+    free(r_corrected_protanopia);
+    free(g_corrected_protanopia);
+    free(b_corrected_protanopia);
 
-    free(l_corrected_deuteranopia);
-    free(m_corrected_deuteranopia);
-    free(s_corrected_deuteranopia);
+    free(r_corrected_deuteranopia);
+    free(g_corrected_deuteranopia);
+    free(b_corrected_deuteranopia);
 
-    free(l_corrected_tritanopia);
-    free(m_corrected_tritanopia);
-    free(s_corrected_tritanopia);
+    free(r_corrected_tritanopia);
+    free(g_corrected_tritanopia);
+    free(b_corrected_tritanopia);
 
     cudaFree(dev_l);
     cudaFree(dev_m);
     cudaFree(dev_s);
     
-    cudaFree(dev_ll_protanopia);
-    cudaFree(dev_mm_protanopia);
-    cudaFree(dev_ss_protanopia);
+    cudaFree(dev_rr_protanopia);
+    cudaFree(dev_gg_protanopia);
+    cudaFree(dev_bb_protanopia);
 
-    cudaFree(dev_ll_deuteranopia);
-    cudaFree(dev_mm_deuteranopia);
-    cudaFree(dev_ss_deuteranopia);
+    cudaFree(dev_rr_deuteranopia);
+    cudaFree(dev_gg_deuteranopia);
+    cudaFree(dev_bb_deuteranopia);
 
-    cudaFree(dev_ll_tritanopia);
-    cudaFree(dev_mm_tritanopia);
-    cudaFree(dev_ss_tritanopia);
+    cudaFree(dev_rr_tritanopia);
+    cudaFree(dev_gg_tritanopia);
+    cudaFree(dev_bb_tritanopia);
 
-    cudaFree(dev_ll_corrected_protanopia);
-    cudaFree(dev_mm_corrected_protanopia);
-    cudaFree(dev_ss_corrected_protanopia);
+    cudaFree(dev_rr_corrected_protanopia);
+    cudaFree(dev_gg_corrected_protanopia);
+    cudaFree(dev_bb_corrected_protanopia);
 
-    cudaFree(dev_ll_corrected_deuteranopia);
-    cudaFree(dev_mm_corrected_deuteranopia);
-    cudaFree(dev_ss_corrected_deuteranopia);
+    cudaFree(dev_rr_corrected_deuteranopia);
+    cudaFree(dev_gg_corrected_deuteranopia);
+    cudaFree(dev_bb_corrected_deuteranopia);
 
-    cudaFree(dev_ll_corrected_tritanopia);
-    cudaFree(dev_mm_corrected_tritanopia);
-    cudaFree(dev_ss_corrected_tritanopia);
-
+    cudaFree(dev_rr_corrected_tritanopia);
+    cudaFree(dev_gg_corrected_tritanopia);
+    cudaFree(dev_bb_corrected_tritanopia);
 }
 
 int main(int argc, char *argv[])
