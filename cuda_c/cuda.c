@@ -593,5 +593,6 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
 
 int main(int argc, char *argv[])
 {
-    processImageWithCUDA("lena_color", "temp");
+    for(int i=0; i<100; i++)
+        processImageWithCUDA("lena_color", "temp");
 }
