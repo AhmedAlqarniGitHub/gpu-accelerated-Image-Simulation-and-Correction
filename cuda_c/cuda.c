@@ -440,13 +440,14 @@ void processImageWithCUDA(const char *imageFileName, const char *outputFileName)
     // Wait for streamTritanopia to finish
     cudaStreamSynchronize(streamCorrectedTritanopia);
 
+
     // Copy results back to host in streamTritanopia
     cudaMemcpyAsync(r_tritanopia, dev_rr_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
     cudaMemcpyAsync(g_tritanopia, dev_gg_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
     cudaMemcpyAsync(b_tritanopia, dev_bb_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamTritanopia);
-    cudaMemcpyAsync(r_corrected_protanopia, dev_rr_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
-    cudaMemcpyAsync(g_corrected_protanopia, dev_gg_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
-    cudaMemcpyAsync(b_corrected_protanopia, dev_bb_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
+    cudaMemcpyAsync(r_corrected_tritanopia, dev_rr_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
+    cudaMemcpyAsync(g_corrected_tritanopia, dev_gg_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
+    cudaMemcpyAsync(b_corrected_tritanopia, dev_bb_corrected_tritanopia, size * sizeof(float), cudaMemcpyDeviceToHost, streamCorrectedTritanopia);
 
 
     // Convert LMS back to RGB for protanopia and write to file
