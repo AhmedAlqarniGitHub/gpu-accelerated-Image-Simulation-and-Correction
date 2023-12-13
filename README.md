@@ -10,17 +10,17 @@ to profile the Serial code, run the following code:
 
 # Running OpenACC Code - Explicit Data Management
 to compile with explicit OpenACC Data Management, run the following code:
-!nvc -fast -ta=tesla -Minfo=accel -o OpenACC-data-management OpenACC-data-management.c && ./OpenACC-data-management
+<br />!nvc -fast -ta=tesla -Minfo=accel -o OpenACC-data-management OpenACC-data-management.c && ./OpenACC-data-management
 to profile the code, run the following code:
-%timeit !./OpenACC-data-management
-!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-data-management ./OpenACC-data-management
+<br />%timeit !./OpenACC-data-management
+<br />!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-data-management ./OpenACC-data-management
 
 # Running OpenACC Code - Managed Memory
 to compile with OpenACC Managed Memory, run the following code:
-!nvc -fast -ta=tesla:managed -Minfo=accel -o OpenACC-managed-memory OpenACC-managed-memory.c && ./OpenACC-managed-memory
+<br />!nvc -fast -ta=tesla:managed -Minfo=accel -o OpenACC-managed-memory OpenACC-managed-memory.c && ./OpenACC-managed-memory
 to profile the code, run the following code:
-%timeit !./OpenACC-managed-memory
-!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
+<br />%timeit !./OpenACC-managed-memory
+<br />!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
 
 # Sample flow of application
 Flow of simulate protanopia:
