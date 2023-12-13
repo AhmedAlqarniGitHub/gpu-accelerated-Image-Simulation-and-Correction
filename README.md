@@ -1,5 +1,5 @@
-# gpu-accelerated-Image-Simulation-and-Correction
-Course project
+# Accelerated GPU Programming in Blindness Simulation and Correction Image Processing ![image](https://github.com/AhmedAlqarniGitHub/gpu-accelerated-Image-Simulation-and-Correction/assets/13741278/ade910fd-ddb6-49b0-a964-51f5cb774e9f)
+KFUPM COE 506 Course Project
 
 # Running Serial Code
 to compile the Serial code, run the following code:
