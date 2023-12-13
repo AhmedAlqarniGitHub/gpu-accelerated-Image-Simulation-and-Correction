@@ -4,21 +4,21 @@ KFUPM COE 506 Course Project
 # Running Serial Code
 to compile the Serial code, run the following code:    
 <br />!nvc -Minfo=accel -o serial serial.c
-to profile the Serial code, run the following code:
+<br />to profile the Serial code, run the following code:
 <br />%timeit !./serial
 <br />\n!nsys profile --stats=true --force-overwrite true -o serial ./serial
 
 # Running OpenACC Code - Explicit Data Management
 to compile with explicit OpenACC Data Management, run the following code:
 <br />!nvc -fast -ta=tesla -Minfo=accel -o OpenACC-data-management OpenACC-data-management.c && ./OpenACC-data-management
-to profile the code, run the following code:
+<br />to profile the code, run the following code:
 <br />%timeit !./OpenACC-data-management
 <br />!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-data-management ./OpenACC-data-management
 
 # Running OpenACC Code - Managed Memory
 to compile with OpenACC Managed Memory, run the following code:
 <br />!nvc -fast -ta=tesla:managed -Minfo=accel -o OpenACC-managed-memory OpenACC-managed-memory.c && ./OpenACC-managed-memory
-to profile the code, run the following code:
+<br />to profile the code, run the following code:
 <br />%timeit !./OpenACC-managed-memory
 <br />!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
 
