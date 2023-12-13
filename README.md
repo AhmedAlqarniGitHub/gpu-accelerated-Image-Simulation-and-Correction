@@ -3,10 +3,10 @@ KFUPM COE 506 Course Project
 
 # Running Serial Code
 to compile the Serial code, run the following code:    
-\n!nvc -Minfo=accel -o serial serial.c
+<br />!nvc -Minfo=accel -o serial serial.c
 to profile the Serial code, run the following code:
-\n%timeit !./serial
-\n!nsys profile --stats=true --force-overwrite true -o serial ./serial
+<br />%timeit !./serial
+<br />\n!nsys profile --stats=true --force-overwrite true -o serial ./serial
 
 # Running OpenACC Code - Explicit Data Management
 to compile with explicit OpenACC Data Management, run the following code:
