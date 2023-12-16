@@ -21,6 +21,9 @@ To profile the code, run the following commands:
 %timeit !./OpenACC-data-management
 !nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-data-management ./OpenACC-data-management
 
+To profile the code, run the following commands:
+%timeit !./OpenACC-managed-memory
+!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
 
 
 ## Running OpenACC Code - Managed Memory
@@ -28,9 +31,23 @@ To compile with OpenACC Managed Memory, run the following command:
 !nvc -fast -ta=tesla:managed -Minfo=accel -o OpenACC-managed-memory OpenACC-managed-memory.c && ./OpenACC-managed-memory
 
 
-To profile the code, run the following commands:
-%timeit !./OpenACC-managed-memory
-!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
+## Running CUDA C Code
+To compile CUDA C, run the following command (in cuda_c folder):
+!nvcc -arch=sm_70 -o cuda-c cuda.cu
+
+
+To profile the code, run the following commands (in cuda_c folder):
+%timeit !./cuda-c
+!nsys profile --stats=true --force-overwrite=true -o cuda-c-report ./cuda-c
+
+
+## Running CUDA PYTHON Code
+To compile CUDA PYTHON, run the following command (in cuda_python folder):
+!python ./cuda_python.py
+
+
+To measure the code timing, run the following commands (in cuda_python folder):
+%timeit !python ./cuda_python.py
 
 
 
