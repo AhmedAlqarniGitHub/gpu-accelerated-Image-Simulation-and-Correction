@@ -1,46 +1,23 @@
-# Accelerated GPU Programming in Blindness Simulation and Correction Image Processing
-KFUPM COE 506 Course Project
+#Introduction
+This project is developed as part of the KFUPM COE 506 Course and focuses on leveraging GPU acceleration for image processing tasks. It includes implementations for simulating and correcting color vision deficiencies (CVD) such as protanopia, deuteranopia, and tritanopia.
 
-# Running Serial Code
----to compile the Serial code, run the following code:    
-<br />!nvc -Minfo=accel -o serial serial.c
-<br />---to profile the Serial code, run the following code:
-<br />%timeit !./serial
-<br />\n!nsys profile --stats=true --force-overwrite true -o serial ./serial
+#Components
+The repository consists of several key components:
 
-# Running OpenACC Code - Explicit Data Management
----to compile with explicit OpenACC Data Management, run the following code:
-<br />!nvc -fast -ta=tesla -Minfo=accel -o OpenACC-data-management OpenACC-data-management.c && ./OpenACC-data-management
-<br />---to profile the code, run the following code:
-<br />%timeit !./OpenACC-data-management
-<br />!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-data-management ./OpenACC-data-management
+CUDA in C: Core GPU-accelerated algorithms implemented in C using CUDA. View CUDA C Code
 
-# Running OpenACC Code - Managed Memory
----to compile with OpenACC Managed Memory, run the following code:
-<br />!nvc -fast -ta=tesla:managed -Minfo=accel -o OpenACC-managed-memory OpenACC-managed-memory.c && ./OpenACC-managed-memory
-<br />---to profile the code, run the following code:
-<br />%timeit !./OpenACC-managed-memory
-<br />!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
+CUDA with Python: A Python wrapper for the CUDA C code, providing a more accessible interface. View CUDA Python Code
 
-# Running CUDA Python Code 
----to compile with CUDA Python, run the following code:
-<br />%timeit ./cuda_python
+OpenACC: Alternative GPU acceleration using OpenACC, demonstrating different approaches to parallel computing. View OpenACC Code
 
+Image Processing Utilities: A collection of utility functions for basic image processing tasks like converting to grayscale, adjusting brightness, etc. View Image Processing Utilities
 
-# Sample flow of application
-Flow of simulate protanopia:
-1- the following arguments should be available before processing:
-    a- image file name
-    b- header (first 54 bytes of the image file) (getc)
-    c- image size
-    d- buffer ( has the image stored in it as bytes “getc” 2d array cell for each color in each pixel )
-    e- bitDepth ( element at index 28 in the header)
-    f- colorTable (when bitdepth ≤8, the color table will be the next 1024 bytes after header
-2- in the function (simulate_cvd_protanopia):
-    a- write the header in the new file as is.
-    b- create new 2d array with size*3 (cells for RGB)
-    c- convert each pixel “rgb” from rgb to lms (using rgb2lms) by passing the addresses
-    d- send lms values to simulate_protanopia function
-    e- convert new lms values back to rgb, then store them in the proper index in the output buffer or 2d array.
-    f- print the values using single thread to the output file byte by byte.
-    g- close the file.
+#Usage
+The project includes scripts and instructions for running and profiling the code in different modes (Serial, CUDA, OpenACC). Detailed instructions are provided in the README.
+
+#Sample Application Flow
+A typical flow for simulating protanopia involves processing an image file through various stages, including RGB to LMS conversion, simulating CVD, and converting back to RGB. The process is detailed in the README.
+
+#License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
