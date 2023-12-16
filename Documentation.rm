@@ -6,19 +6,17 @@ To compile the Serial code, run the following command:
 !nvc -Minfo=accel -o serial serial.c
 
 
-Copy code
 To profile the Serial code, run the following commands:
 %timeit !./serial
 !nsys profile --stats=true --force-overwrite true -o serial ./serial
 
 
-Copy code
 
 ## Running OpenACC Code - Explicit Data Management
 To compile with explicit OpenACC Data Management, run the following command:
 !nvc -fast -ta=tesla -Minfo=accel -o OpenACC-data-management OpenACC-data-management.c && ./OpenACC-data-management
 
-css
+
 To profile the code, run the following commands:
 %timeit !./OpenACC-data-management
 !nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-data-management ./OpenACC-data-management
@@ -29,7 +27,7 @@ To profile the code, run the following commands:
 To compile with OpenACC Managed Memory, run the following command:
 !nvc -fast -ta=tesla:managed -Minfo=accel -o OpenACC-managed-memory OpenACC-managed-memory.c && ./OpenACC-managed-memory
 
-css
+
 To profile the code, run the following commands:
 %timeit !./OpenACC-managed-memory
 !nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
