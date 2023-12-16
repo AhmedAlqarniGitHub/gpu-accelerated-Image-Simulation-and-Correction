@@ -22,6 +22,11 @@ KFUPM COE 506 Course Project
 <br />%timeit !./OpenACC-managed-memory
 <br />!nsys profile -t openacc --stats=true --force-overwrite true -o OpenACC-managed-memory ./OpenACC-managed-memory
 
+# Running CUDA Python Code 
+---to compile with CUDA Python, run the following code:
+<br />%timeit ./cuda_python
+
+
 # Sample flow of application
 Flow of simulate protanopia:
 1- the following arguments should be available before processing:
