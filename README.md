@@ -15,7 +15,7 @@ The repository consists of several key components:
 - **Image Processing Utilities**: A collection of utility functions for basic image processing tasks like converting to grayscale, adjusting brightness, etc. [View Image Processing Utilities](https://github.com/AhmedAlqarniGitHub/gpu-accelerated-Image-Simulation-and-Correction/tree/main/utilities/image-processing)
 
 ## Usage
-The project includes scripts and instructions for running and profiling the code in different modes (Serial, CUDA, OpenACC). Detailed instructions are provided in the [README](https://github.com/AhmedAlqarniGitHub/gpu-accelerated-Image-Simulation-and-Correction/blob/main/README.md).
+The project includes scripts and instructions for running and profiling the code in different modes (Serial, CUDA, OpenACC). Detailed instructions are provided in the [README](https://github.com/AhmedAlqarniGitHub/gpu-accelerated-Image-Simulation-and-Correction/blob/main/Documentation.md).
 
 ## Sample Application Flow
 A typical flow for simulating protanopia involves processing an image file through various stages, including RGB to LMS conversion, simulating CVD, and converting back to RGB. The process is detailed in the README.
